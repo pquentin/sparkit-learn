@@ -80,8 +80,8 @@ class SparkLinearModelMixin(object):
         mapper = lambda X_y: super(cls, self).fit(
             X_y[0], X_y[1], *args, **kwargs
         )
-        models = Z.map(mapper)
-        avg = models.sum() / models.count()
+        models = Z.map(mapper).collect()
+        avg = sum(models) / len(models)
         self.__dict__.update(avg.__dict__)
         return self
 
