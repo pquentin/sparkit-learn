@@ -297,9 +297,12 @@ class SparkTruncatedSVD(TruncatedSVD, SparkBroadcasterMixin):
         check_rdd(X, (sp.spmatrix, np.ndarray))
         if self.algorithm == "em":
             X = X.persist()  # boosting iterative svm
-            Sigma, V = svd_em(X, k=self.n_components, maxiter=self.n_iter,
-                              tol=self.tol, compute_u=False,
-                              seed=self.random_state)
+            _, V = svd_em(X, k=self.n_components, maxiter=self.n_iter,
+                                 tol=self.tol, compute_u=False,
+                                 seed=self.random_state)
+            max_abs_rows = np.argmax(np.abs(V), axis=1)
+            signs = np.sign(V[range(V.shape[0]), max_abs_rows])
+            V *= signs[:, np.newaxis]
             self.components_ = V
             X.unpersist()
             return self.transform(Z)
